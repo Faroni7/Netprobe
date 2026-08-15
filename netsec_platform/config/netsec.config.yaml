@@ -1,0 +1,716 @@
+# NetSec Platform - Complete Configuration File
+# Network Security Visibility, Traffic Analysis, Evidence & Authorized Pentesting Platform
+# 
+# This file contains ALL configurable settings for the platform.
+# Every implemented configuration option is represented here.
+#
+# Configuration Precedence (highest to lowest):
+#   1. CLI arguments (--config override)
+#   2. Environment variables (NETSEC_*)
+#   3. This configuration file
+#   4. Pydantic model defaults
+#   5. Hard-coded fallbacks
+#
+# Security Notes:
+#   - NEVER commit this file with real secrets to version control
+#   - Use environment variables or secret managers for sensitive values
+#   - Marked with <SECRET> or <SET_VIA_ENV> where secrets are required
+#   - 18 settings are SECURITY CRITICAL - marked with [SECURITY CRITICAL]
+#
+# Usage:
+#   cp config/netsec.config.yaml config/config.yaml
+#   # Edit config.yaml with your settings
+#   netsec-platform --config config/config.yaml
+#
+# Documentation: See CONFIGURATION_REFERENCE.md for complete details
+
+# =============================================================================
+# APPLICATION SETTINGS
+# =============================================================================
+app:
+  # Application environment: development, testing, production
+  # [SECURITY CRITICAL] Affects logging verbosity, error handling, debug endpoints
+  environment: "production"
+  
+  # Application debug mode
+  # WARNING: Do not enable in production - may expose sensitive information
+  debug_mode: false
+  
+  # Application host binding
+  # [SECURITY CRITICAL] 0.0.0.0 exposes to all interfaces, 127.0.0.1 localhost only
+  host: "127.0.0.1"
+  
+  # Application port
+  # [SECURITY CRITICAL] Changing requires appropriate firewall rules
+  port: 8000
+  
+  # Application name (for logging and identification)
+  name: "NetSec Platform"
+  
+  # Application version (auto-set, do not modify manually)
+  version: "1.0.0"
+
+# =============================================================================
+# LOGGING SETTINGS
+# =============================================================================
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  # Runtime reloadable: YES
+  level: "INFO"
+  
+  # Log format: json, text
+  format: "json"
+  
+  # Log output path (use "-" for stdout)
+  output_path: "/var/netsec_platform/logs/app.log"
+  
+  # Maximum log file size in MB before rotation
+  max_file_size_mb: 100
+  
+  # Number of rotated log files to retain
+  retention_count: 5
+  
+  # Include timestamps in logs
+  include_timestamps: true
+  
+  # Include log source (file/line) in output
+  include_source: true
+  
+  # [SECURITY CRITICAL] Always redact sensitive data (passwords, tokens, cookies)
+  # WARNING: Setting to false will expose credentials in logs - NEVER do this
+  redact_sensitive_data: true
+
+# =============================================================================
+# CAPTURE ENGINE SETTINGS
+# =============================================================================
+capture:
+  # Enable/disable packet capture
+  # Runtime reloadable: NO (requires restart)
+  enabled: true
+  
+  # Network interface to capture from
+  # Examples: eth0, wlan0, lo, vmnet1, vboxnet0
+  # Use 'any' for all interfaces (may require elevated privileges)
+  interface: "eth0"
+  
+  # [SECURITY CRITICAL] Capture profile determining data retention
+  # Allowed values: metadata_only, standard, full_evidence
+  #
+  # metadata_only: No payloads, maximum privacy, reduced storage
+  # standard: Balanced approach with protected sensitive values (RECOMMENDED)
+  # full_evidence: Full payload capture with encryption (requires explicit confirmation)
+  profile: "standard"
+  
+  # BPF filter for packet capture (optional)
+  # Example: "tcp port 80 or tcp port 443"
+  # Leave empty for no filter (captures all traffic)
+  filter: ""
+  
+  # Snapshot length in bytes (max bytes per packet to capture)
+  # Currently hardcoded to 65535 in implementation
+  snaplen_bytes: 65535
+  
+  # Capture buffer size in MB
+  # Too small: packet drops under high load
+  # Too large: increased memory usage
+  buffer_size_mb: 256
+  
+  # Packet queue size (number of packets)
+  # Controls backpressure when processing can't keep up
+  queue_size: 10000
+  
+  # Number of worker threads for packet processing
+  worker_count: 4
+  
+  # Maximum packets to capture (0 = unlimited)
+  packet_limit: 0
+  
+  # Maximum capture file size in GB before rotation
+  file_size_limit_gb: 10
+  
+  # Rotation interval in seconds (0 = disable time-based rotation)
+  rotation_interval_seconds: 3600
+  
+  # [SECURITY CRITICAL] Retention period for captured data in days
+  retention_days: 7
+  
+  # Maximum total storage for captures in GB
+  max_storage_gb: 100
+  
+  # Include nanosecond-precision timestamps
+  high_precision_timestamps: true
+  
+  # Enable promiscuous mode (requires root/admin privileges)
+  promiscuous_mode: true
+  
+  # Enable protocol decoding (DNS, HTTP, TLS, etc.)
+  protocol_decoding: true
+  
+  # Capture packet payloads (depends on profile setting)
+  payload_capture: true
+  
+  # Enable compression for stored captures
+  # PARTIALLY IMPLEMENTED: Flag exists but compression not yet active
+  compression_enabled: false
+
+# =============================================================================
+# PROTOCOL DECODING SETTINGS
+# =============================================================================
+protocols:
+  # Enable/disable specific protocol decoders
+  # Runtime reloadable: YES
+  
+  # Ethernet/VLAN decoding
+  ethernet: true
+  
+  # ARP decoding
+  arp: true
+  
+  # IPv4 decoding
+  ipv4: true
+  
+  # IPv6 decoding
+  ipv6: true
+  
+  # TCP decoding and flow tracking
+  tcp: true
+  
+  # UDP decoding
+  udp: true
+  
+  # ICMP/ICMPv6 decoding
+  icmp: true
+  
+  # DNS query/response analysis
+  dns: true
+  
+  # HTTP request/response parsing
+  http: true
+  
+  # TLS handshake metadata extraction
+  tls: true
+  
+  # QUIC metadata extraction
+  quic: true
+  
+  # SMB protocol analysis
+  smb: true
+  
+  # LDAP directory operation analysis
+  ldap: true
+  
+  # Kerberos ticket analysis
+  kerberos: true
+  
+  # GRE tunnel detection
+  gre: true
+  
+  # VXLAN tunnel detection
+  vxlan: true
+  
+  # IP-in-IP tunnel detection
+  ip_in_ip: true
+
+# =============================================================================
+# DETECTION ENGINE SETTINGS
+# =============================================================================
+detection:
+  # Enable/disable the detection engine
+  enabled: true
+  
+  # Number of concurrent detection workers
+  worker_count: 2
+  
+  # Detection queue size
+  queue_size: 5000
+  
+  # Processing timeout in seconds
+  timeout_seconds: 30
+  
+  # Confidence threshold for findings (0.0 to 1.0)
+  # Higher = fewer false positives, more false negatives
+  confidence_threshold: 0.7
+  
+  # Enable sensitive data detection
+  sensitive_data_detection: true
+  
+  # Enable security finding detection
+  security_finding_detection: true
+  
+  # Custom detection rules path (optional)
+  custom_rules_path: ""
+
+# =============================================================================
+# SENSITIVE DATA DETECTION SETTINGS
+# =============================================================================
+sensitive_data:
+  # Detect usernames and user IDs
+  detect_usernames: true
+  
+  # Detect passwords and passphrases
+  # [SECURITY CRITICAL] Controls credential exposure detection
+  detect_passwords: true
+  
+  # Detect email addresses
+  detect_emails: true
+  
+  # Detect phone numbers
+  detect_phones: true
+  
+  # Detect physical addresses
+  detect_addresses: true
+  
+  # Detect credit card numbers
+  detect_credit_cards: true
+  
+  # Detect session cookies
+  # [SECURITY CRITICAL] Controls session artifact detection
+  detect_session_cookies: true
+  
+  # Detect authentication tokens
+  # [SECURITY CRITICAL] Controls token exposure detection
+  detect_auth_tokens: true
+  
+  # Detect JWT tokens
+  detect_jwt: true
+  
+  # Detect API keys and secrets
+  # [SECURITY CRITICAL] Controls API key exposure detection
+  detect_api_keys: true
+  
+  # Detect cloud credentials (AWS, Azure, GCP)
+  # [SECURITY CRITICAL] Controls cloud credential detection
+  detect_cloud_credentials: true
+  
+  # Custom regex patterns file (optional)
+  custom_patterns_path: ""
+
+# =============================================================================
+# EVIDENCE STORAGE SETTINGS
+# =============================================================================
+evidence:
+  # Enable evidence vault
+  # [SECURITY CRITICAL] Disabling removes all evidence protections
+  enabled: true
+  
+  # [SECURITY CRITICAL] Storage path for evidence vault
+  # Must be absolute path with appropriate permissions
+  storage_path: "/var/netsec_platform/data/evidence"
+  
+  # [SECURITY CRITICAL] Enable AES-256-GCM encryption for evidence
+  # NEVER set to false in production environments
+  encryption_enabled: true
+  
+  # [SECURITY CRITICAL] Encryption key (256-bit / 32 bytes)
+  # MUST be set via environment variable or secret manager
+  # NEVER commit actual key to version control
+  encryption_key: "<SET_VIA_ENV>"
+  
+  # [SECURITY CRITICAL] Hashing algorithm for integrity verification
+  # Only SHA-256 is supported and recommended
+  hashing_algorithm: "sha256"
+  
+  # [SECURITY CRITICAL] Evidence retention period in days
+  # After this period, evidence is securely deleted
+  retention_days: 90
+  
+  # Enable immutable evidence mode (append-only)
+  # [SECURITY CRITICAL] Prevents evidence modification
+  immutable: true
+  
+  # Enable automatic integrity verification on access
+  verification_enabled: true
+  
+  # PARTIALLY IMPLEMENTED: Compression flag exists but not yet active
+  compression_enabled: false
+  
+  # Maximum evidence file size in MB
+  max_file_size_mb: 500
+  
+  # Secure deletion method: overwrite, crypto-shred
+  # crypto-shred: Delete encryption key (instant, secure)
+  # overwrite: Overwrite with random data (slower, thorough)
+  secure_deletion_method: "crypto-shred"
+
+# =============================================================================
+# AUDIT LOGGING SETTINGS
+# =============================================================================
+audit:
+  # Enable audit logging
+  # [SECURITY CRITICAL] Disabling removes chain-of-custody tracking
+  enabled: true
+  
+  # Audit log output path
+  output_path: "/var/netsec_platform/logs/audit.jsonl"
+  
+  # Include detailed context in audit events
+  include_context: true
+  
+  # Include analyst identity in audit events
+  # [SECURITY CRITICAL] Required for accountability
+  include_analyst_identity: true
+  
+  # Include timestamp in audit events
+  include_timestamp: true
+  
+  # Include evidence references in audit events
+  include_evidence_references: true
+  
+  # Tamper-evident mode (append-only, cryptographic chaining)
+  # [SECURITY CRITICAL] MUST be true for chain of custody
+  tamper_evident: true
+
+# =============================================================================
+# AUTHENTICATION & AUTHORIZATION SETTINGS
+# =============================================================================
+auth:
+  # Session timeout in minutes
+  # [SECURITY CRITICAL] Controls how long sessions remain valid
+  session_timeout_minutes: 60
+  
+  # Maximum login attempts before lockout
+  # [SECURITY CRITICAL] Brute-force protection
+  max_login_attempts: 5
+  
+  # Account lockout duration in minutes
+  # [SECURITY CRITICAL] How long accounts stay locked after failed attempts
+  lockout_duration_minutes: 30
+  
+  # Enable CSRF protection
+  # [SECURITY CRITICAL] MUST be true in production
+  csrf_protection: true
+  
+  # Use secure cookies (HTTPS only)
+  # [SECURITY CRITICAL] MUST be true in production
+  secure_cookies: true
+  
+  # Use HttpOnly cookies (no JavaScript access)
+  # [SECURITY CRITICAL] MUST be true to prevent XSS token theft
+  http_only_cookies: true
+  
+  # SameSite cookie attribute: Strict, Lax, None
+  # [SECURITY CRITICAL] Strict recommended for security-sensitive apps
+  same_site: "Strict"
+  
+  # Require multi-factor authentication for admin users
+  # [SECURITY CRITICAL] Recommended for privileged accounts
+  require_mfa_for_admin: false
+  
+  # Password minimum length
+  # [SECURITY CRITICAL] Minimum 12 recommended
+  password_min_length: 12
+  
+  # Require special characters in passwords
+  password_require_special: true
+  
+  # Require numbers in passwords
+  password_require_numbers: true
+  
+  # Require uppercase letters in passwords
+  password_require_uppercase: true
+
+# =============================================================================
+# API SETTINGS
+# =============================================================================
+api:
+  # API rate limiting (requests per minute per client)
+  # [SECURITY CRITICAL] Prevents abuse and DoS
+  rate_limit_per_minute: 100
+  
+  # Enable API documentation (Swagger UI at /docs)
+  enable_docs: true
+  
+  # Enable CORS (Cross-Origin Resource Sharing)
+  # [SECURITY CRITICAL] Configure allowed_origins carefully
+  enable_cors: false
+  
+  # Allowed origins for CORS (comma-separated if multiple)
+  allowed_origins: "http://localhost:5173"
+  
+  # Trusted proxies (comma-separated IP addresses)
+  # [SECURITY CRITICAL] List reverse proxies that set X-Forwarded-* headers
+  trusted_proxies: "127.0.0.1"
+  
+  # Enable request/response logging for debugging
+  # WARNING: May log sensitive data - use only in development
+  enable_request_logging: false
+
+# =============================================================================
+# DATABASE SETTINGS
+# =============================================================================
+database:
+  # Database URL (SQLite by default)
+  # Format: sqlite+aiosqlite:///path/to/database.db
+  url: "sqlite+aiosqlite:///var/netsec_platform/data/netsec.db"
+  
+  # Connection pool size
+  pool_size: 10
+  
+  # Connection pool overflow (additional temporary connections)
+  pool_overflow: 5
+  
+  # Connection timeout in seconds
+  connection_timeout_seconds: 30
+  
+  # Enable query logging (development only)
+  echo_queries: false
+
+# =============================================================================
+# STORAGE SETTINGS
+# =============================================================================
+storage:
+  # Base directory for all platform data
+  base_path: "/var/netsec_platform/data"
+  
+  # PCAP file storage directory
+  pcap_directory: "/var/netsec_platform/data/pcap"
+  
+  # Flow data storage directory
+  flows_directory: "/var/netsec_platform/data/flows"
+  
+  # Reports export directory
+  reports_directory: "/var/netsec_platform/data/reports"
+  
+  # Maximum total storage usage in GB
+  # When exceeded, oldest data is deleted (except preserved evidence)
+  max_total_storage_gb: 500
+  
+  # Enable storage quota enforcement
+  quota_enforcement_enabled: true
+  
+  # Storage check interval in seconds
+  storage_check_interval_seconds: 300
+
+# =============================================================================
+# EMERGENCY SECURITY STOP (ESS) SETTINGS
+# =============================================================================
+ess:
+  # Enable Emergency Security Stop functionality
+  # [SECURITY CRITICAL] MUST be true in production
+  enabled: true
+  
+  # ESS activation requires confirmation
+  require_confirmation: true
+  
+  # Automatically lock evidence vault on ESS activation
+  # [SECURITY CRITICAL] MUST be true
+  lock_evidence_on_activation: true
+  
+  # Automatically stop active tests on ESS activation
+  # [SECURITY CRITICAL] MUST be true
+  stop_tests_on_activation: true
+  
+  # Automatically stop exports on ESS activation
+  # [SECURITY CRITICAL] MUST be true
+  stop_exports_on_activation: true
+  
+  # ESS audit event priority
+  audit_priority: "CRITICAL"
+  
+  # Require authorization for ESS recovery
+  # [SECURITY CRITICAL] MUST be true
+  require_auth_for_recovery: true
+
+# =============================================================================
+# CONTROLLED TESTING (PENTESTING) SETTINGS
+# =============================================================================
+testing:
+  # Enable controlled testing module
+  enabled: true
+  
+  # [SECURITY CRITICAL] Require explicit authorization reference for all tests
+  require_authorization: true
+  
+  # [SECURITY CRITICAL] Enforce scope validation before test execution
+  require_scope_validation: true
+  
+  # Default rate limit for controlled tests (requests per second)
+  default_rate_limit: 10
+  
+  # Maximum test duration in seconds (0 = unlimited)
+  maximum_duration_seconds: 3600
+  
+  # Maximum concurrent tests
+  max_concurrent_tests: 3
+  
+  # [SECURITY CRITICAL] Enable emergency stop override for all tests
+  emergency_stop_enabled: true
+  
+  # [SECURITY CRITICAL] Enable comprehensive audit logging for tests
+  audit_logging_enabled: true
+  
+  # Excluded targets (CIDR notation, comma-separated)
+  # These targets are NEVER allowed regardless of scope
+  excluded_targets: "10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16"
+  
+  # Dry-run mode (preview without execution)
+  dry_run_mode: false
+  
+  # Request timeout in seconds
+  request_timeout_seconds: 30
+  
+  # Maximum requests per test
+  max_requests_per_test: 10000
+
+# =============================================================================
+# KUBERNETES INTEGRATION SETTINGS
+# =============================================================================
+kubernetes:
+  # Enable Kubernetes integration
+  enabled: false
+  
+  # Kubernetes API server URL
+  api_server_url: "https://kubernetes.default.svc"
+  
+  # Path to Kubernetes service account token
+  service_account_token_path: "/var/run/secrets/kubernetes.io/serviceaccount/token"
+  
+  # Path to Kubernetes CA certificate
+  ca_cert_path: "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+  
+  # Kubernetes namespace to monitor (empty = all namespaces)
+  namespace: ""
+  
+  # Enable pod-to-pod flow correlation
+  pod_flow_correlation: true
+  
+  # Enable network policy violation detection
+  policy_violation_detection: true
+  
+  # Kubernetes API request timeout in seconds
+  api_timeout_seconds: 30
+
+# =============================================================================
+# CLOUD INTEGRATION SETTINGS
+# =============================================================================
+cloud:
+  # Enable cloud flow log ingestion
+  enabled: false
+  
+  # Cloud provider: aws, azure, gcp, auto
+  provider: "auto"
+  
+  # AWS region (if using AWS)
+  aws_region: "us-east-1"
+  
+  # AWS VPC Flow Logs group name
+  aws_log_group_name: ""
+  
+  # Azure subscription ID (if using Azure)
+  azure_subscription_id: ""
+  
+  # Azure resource group (if using Azure)
+  azure_resource_group: ""
+  
+  # GCP project ID (if using GCP)
+  gcp_project_id: ""
+  
+  # Flow log polling interval in seconds
+  polling_interval_seconds: 60
+  
+  # Maximum flow logs to process per batch
+  max_batch_size: 1000
+
+# =============================================================================
+# PERFORMANCE SETTINGS
+# =============================================================================
+performance:
+  # Maximum memory usage in MB (0 = unlimited)
+  # When exceeded, backpressure is applied
+  max_memory_mb: 4096
+  
+  # Memory check interval in seconds
+  memory_check_interval_seconds: 10
+  
+  # Maximum CPU usage percentage (0 = unlimited)
+  max_cpu_percent: 80
+  
+  # CPU check interval in seconds
+  cpu_check_interval_seconds: 10
+  
+  # Enable async processing
+  async_processing: true
+  
+  # Maximum concurrent background tasks
+  max_concurrent_tasks: 50
+  
+  # Task queue size
+  task_queue_size: 10000
+  
+  # Background task timeout in seconds
+  task_timeout_seconds: 300
+
+# =============================================================================
+# REPORTING SETTINGS
+# =============================================================================
+reporting:
+  # Default report format: html, pdf, json, csv
+  default_format: "html"
+  
+  # Include executive summary in reports
+  include_executive_summary: true
+  
+  # Include technical details in reports
+  include_technical_details: true
+  
+  # Include evidence references in reports
+  include_evidence_references: true
+  
+  # Include timeline in reports
+  include_timeline: true
+  
+  # Include remediation recommendations
+  include_remediation: true
+  
+  # Maximum findings per report (0 = unlimited)
+  max_findings_per_report: 0
+  
+  # Report generation timeout in seconds
+  generation_timeout_seconds: 120
+  
+  # Enable report encryption for sensitive reports
+  encrypt_sensitive_reports: true
+
+# =============================================================================
+# WEB FRONTEND SETTINGS
+# =============================================================================
+frontend:
+  # Frontend build directory
+  build_directory: "/var/netsec_platform/frontend/build"
+  
+  # Enable live reload in development mode
+  live_reload: false
+  
+  # Frontend server port (if serving separately)
+  server_port: 5173
+  
+  # Enable source maps (development only)
+  enable_source_maps: false
+  
+  # Asset cache duration in hours
+  asset_cache_hours: 24
+
+# =============================================================================
+# END OF CONFIGURATION
+# =============================================================================
+# 
+# Verification:
+#   After starting the platform, verify configuration is loaded correctly:
+#   
+#   1. Check startup logs for "Configuration loaded successfully"
+#   2. Verify effective settings in application logs
+#   3. Test critical features (capture, evidence storage, ESS)
+#   4. Run: curl http://localhost:8000/api/v1/config (if authenticated)
+#
+# Security Reminders:
+#   - Keep this file secure (chmod 600)
+#   - Use environment variables for secrets
+#   - Never commit actual secrets to version control
+#   - Regularly rotate encryption keys
+#   - Monitor audit logs for unauthorized access
+#   - Test ESS functionality regularly
+#
+# Support:
+#   See CONFIGURATION_REFERENCE.md for complete documentation
+#   See README.md for deployment instructions
+# =============================================================================
