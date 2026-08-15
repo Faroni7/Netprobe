@@ -1,1 +1,23 @@
-(netsec_platform/README.md is a source/config file, and there are no build artifacts, dependencies, or temp files in the changes)
+```
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.coverage
+.coverage.*
+
+# Testing
+.pytest_cache/
+.mypy_cache/
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+*.env.*
+```
