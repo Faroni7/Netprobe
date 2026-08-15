@@ -94,20 +94,477 @@ pytest --cov=src
 uvicorn src.netsec_platform.api.main:app --host 127.0.0.1 --port 8000
 ```
 
-## Configuration
+## Deployment
 
-Configure via environment variables or YAML file. Key settings:
-- Capture profile (metadata-only, standard, full-evidence)
-- Network interface selection
-- Storage encryption and retention
-- ESS enablement
-- Kubernetes/Cloud integrations
+### Cross-Platform Compatibility
 
-## Usage
+✅ **Fully compatible** with Linux, macOS, and Windows (WSL2 recommended for Windows).
 
-Start the API server and access the web UI at `http://localhost:8000`. The ESS button is prominently displayed on all security-sensitive screens.
+---
 
-Supported interfaces: Ethernet (eth0), WiFi (wlan0), Virtual (vmnet, vboxnet), Loopback (lo), Bridge (br0), Tunnel (tun0).
+### 🐧 Linux (Ubuntu/Debian)
+
+#### Step 1: Install System Dependencies
+
+```bash
+sudo apt update
+sudo apt install -y python3.10 python3.10-venv python3-pip \
+                    libpcap-dev tcpdump git curl nodejs npm \
+                    build-essential libssl-dev
+```
+
+#### Step 2: Clone and Setup Backend
+
+```bash
+git clone https://github.com/YOUR_USERNAME/netsec-platform.git
+cd netsec-platform
+python3.10 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -e ".[prod]"
+```
+
+#### Step 3: Setup Frontend
+
+```bash
+cd frontend
+npm install
+npm run build
+cd ..
+```
+
+#### Step 4: Create Data Directories
+
+```bash
+sudo mkdir -p /var/netsec_platform/{data,logs}
+sudo chown -R $USER:$USER /var/netsec_platform
+```
+
+#### Step 5: Initialize Database
+
+```bash
+python -m src.netsec_platform.database.init_db
+```
+
+#### Step 6: Configure Platform
+
+Create `/etc/netsec_platform/config.yaml`:
+
+```yaml
+capture:
+  profile: standard  # metadata-only, standard, full-evidence
+  interface: eth0    # or wlan0, vmnet1, etc.
+  max_storage_gb: 100
+  retention_days: 7
+
+storage:
+  encrypt_evidence: true
+  evidence_path: /var/netsec_platform/data/evidence
+  pcap_path: /var/netsec_platform/data/pcap
+
+ess:
+  enabled: true
+  require_confirmation: true
+
+kubernetes:
+  enabled: false
+  kubeconfig: ~/.kube/config
+
+cloud:
+  enabled: false
+  providers: []
+```
+
+#### Step 7: Start Platform (Development)
+
+```bash
+# Terminal 1: Backend API
+source .venv/bin/activate
+uvicorn src.netsec_platform.api.main:app \
+  --host 0.0.0.0 \
+  --port 8000 \
+  --reload
+
+# Terminal 2: Frontend (dev mode)
+cd frontend
+npm run dev
+```
+
+Access:
+- Web UI: `http://localhost:5173`
+- API Docs: `http://localhost:8000/docs`
+- Default credentials: `admin` / `ChangeMe123!`
+
+#### Step 8: Start Platform (Production with systemd)
+
+Create `/etc/systemd/system/netsec-api.service`:
+
+```ini
+[Unit]
+Description=NetSec Platform API
+After=network.target
+
+[Service]
+Type=simple
+User=netsec
+Group=netsec
+WorkingDirectory=/opt/netsec-platform
+Environment="PATH=/opt/netsec-platform/.venv/bin"
+ExecStart=/opt/netsec-platform/.venv/bin/uvicorn src.netsec_platform.api.main:app \
+  --host 127.0.0.1 \
+  --port 8000 \
+  --workers 4
+Restart=always
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Create `/etc/systemd/system/netsec-frontend.service`:
+
+```ini
+[Unit]
+Description=NetSec Platform Frontend
+After=network.target netsec-api.service
+
+[Service]
+Type=simple
+User=netsec
+Group=netsec
+WorkingDirectory=/opt/netsec-platform/frontend
+ExecStart=/usr/bin/npm run start:prod
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start services:
+
+```bash
+sudo useradd -r -s /bin/false netsec
+sudo systemctl daemon-reload
+sudo systemctl enable netsec-api netsec-frontend
+sudo systemctl start netsec-api netsec-frontend
+sudo systemctl status netsec-api netsec-frontend
+```
+
+#### Step 9: Configure Nginx Reverse Proxy (Optional)
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name netsec.example.com;
+
+    ssl_certificate /etc/ssl/certs/netsec.crt;
+    ssl_certificate_key /etc/ssl/private/netsec.key;
+
+    location / {
+        proxy_pass http://localhost:5173;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    location /api/ {
+        proxy_pass http://localhost:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+---
+
+### 🍎 macOS
+
+#### Step 1: Install Dependencies via Homebrew
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew install python@3.10 libpcap node git openssl
+```
+
+#### Step 2: Clone and Setup
+
+```bash
+git clone https://github.com/YOUR_USERNAME/netsec-platform.git
+cd netsec-platform
+python3.10 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -e ".[prod]"
+```
+
+#### Step 3: Setup Frontend
+
+```bash
+cd frontend
+npm install
+npm run build
+cd ..
+```
+
+#### Step 4: Create Data Directories
+
+```bash
+mkdir -p ~/netsec_platform/{data,logs}
+export NETSEC_DATA_PATH=~/netsec_platform/data
+export NETSEC_LOG_PATH=~/netsec_platform/logs
+```
+
+#### Step 5: Initialize and Configure
+
+```bash
+python -m src.netsec_platform.database.init_db
+cp config.example.yaml config.yaml
+# Edit config.yaml with your settings
+```
+
+#### Step 6: Start Platform
+
+```bash
+# Development mode
+uvicorn src.netsec_platform.api.main:app --host 127.0.0.1 --port 8000 &
+cd frontend && npm run dev
+```
+
+**Note**: Packet capture on macOS requires additional permissions. You may need to:
+1. Grant terminal access in System Preferences → Security & Privacy → Privacy → Accessibility
+2. Use `sudo` for live capture: `sudo -E $(which python) -m src.netsec_platform.capture.start`
+
+---
+
+### 🪟 Windows (WSL2 Recommended)
+
+#### Option A: WSL2 (Recommended)
+
+1. **Install WSL2**:
+```powershell
+wsl --install -d Ubuntu-22.04
+```
+
+2. **Inside WSL2**, follow the [Linux deployment steps](#-linux-ubuntudebian) above.
+
+3. **Access network interfaces**: WSL2 can access Windows network interfaces through `/mnt/c/` and mirrored networking (Windows 11).
+
+#### Option B: Native Windows (Limited Support)
+
+⚠️ **Limitations**: Some features may not work correctly on native Windows due to libpcap compatibility.
+
+```powershell
+# Install Python 3.10+ from python.org
+# Install Node.js from nodejs.org
+# Install Npcap from https://nmap.org/npcap/
+
+git clone https://github.com/YOUR_USERNAME/netsec-platform.git
+cd netsec-platform
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -e ".[prod]"
+
+cd frontend
+npm install
+npm run build
+cd ..
+
+python -m src.netsec_platform.database.init_db
+uvicorn src.netsec_platform.api.main:app --host 127.0.0.1 --port 8000
+```
+
+---
+
+### ☁️ Cloud Deployment (AWS/Azure/GCP)
+
+#### AWS EC2 Example
+
+```bash
+# Launch Ubuntu 22.04 instance
+# Security Group: Allow 443 (HTTPS), 22 (SSH)
+
+ssh ubuntu@your-instance-ip
+
+# Install dependencies
+sudo apt update && sudo apt install -y python3.10 python3-pip libpcap-dev nodejs npm
+
+# Clone and setup
+git clone https://github.com/YOUR_USERNAME/netsec-platform.git
+cd netsec-platform
+python3.10 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[prod]"
+
+# Configure for cloud
+cat > config.yaml << EOF
+capture:
+  profile: standard
+  interface: eth0
+  
+cloud:
+  enabled: true
+  providers:
+    - aws
+    
+storage:
+  encrypt_evidence: true
+  use_s3: true
+  s3_bucket: netsec-evidence-bucket
+EOF
+
+# Deploy with systemd (see Linux section)
+```
+
+**Important**: Cloud VPC Flow Logs integration requires IAM roles with appropriate permissions. See `docs/CLOUD_DEPLOYMENT.md` for detailed configuration.
+
+---
+
+### 🐳 Docker Deployment (Coming Soon)
+
+Docker Compose configuration is under development. Expected usage:
+
+```bash
+docker-compose up -d
+# Access at http://localhost:8000
+```
+
+---
+
+## Post-Deployment Steps
+
+### 1. Change Default Credentials
+
+```bash
+curl -X POST http://localhost:8000/api/v1/auth/change-password \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{"old_password": "ChangeMe123!", "new_password": "YourSecurePassword!"}'
+```
+
+### 2. Enable ESS Test
+
+Verify Emergency Security Stop works:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/ess/activate \
+  -H "Authorization: Bearer ADMIN_TOKEN" \
+  -d '{"reason": "ESS functionality test"}'
+```
+
+Expected response time: **<100ms**
+
+### 3. Configure Capture Interface
+
+Select your network interface:
+
+```bash
+# List available interfaces
+python -m src.netsec_platform.capture.discover_interfaces
+
+# Update config.yaml with chosen interface
+# interface: eth0  # or wlan0, vmnet1, vboxnet0, etc.
+```
+
+### 4. Enable Encryption
+
+For production, ensure encryption is enabled:
+
+```yaml
+storage:
+  encrypt_evidence: true
+  encryption_key_source: env  # or: aws-kms, azure-keyvault, gcp-kms
+```
+
+Set environment variable:
+```bash
+export NETSEC_ENCRYPTION_KEY=<your-32-byte-key>
+```
+
+### 5. Setup Monitoring
+
+Configure log rotation in `/etc/logrotate.d/netsec`:
+
+```
+/var/netsec_platform/logs/*.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    notifempty
+    create 0640 netsec netsec
+}
+```
+
+---
+
+## Troubleshooting
+
+### Cannot capture packets (Permission denied)
+
+**Linux**: Add user to netdev group or use capabilities:
+```bash
+sudo setcap cap_net_raw,cap_net_admin=eip /path/to/python
+# OR
+sudo usermod -aG netdev $USER
+```
+
+**macOS**: Grant terminal accessibility permissions in System Preferences.
+
+**Windows**: Run as Administrator or install Npcap with WinPcap compatibility mode.
+
+### Frontend won't build
+
+```bash
+cd frontend
+rm -rf node_modules package-lock.json
+npm cache clean --force
+npm install
+npm run build
+```
+
+### Database initialization fails
+
+```bash
+rm /var/netsec_platform/data/netsec.db
+python -m src.netsec_platform.database.init_db
+```
+
+### ESS not responding
+
+Check if service is running:
+```bash
+systemctl status netsec-api
+journalctl -u netsec-api -f
+```
+
+### High memory usage
+
+Reduce capture buffer size in config:
+```yaml
+capture:
+  max_buffer_mb: 512  # Default: 1024
+  worker_threads: 2   # Default: 4
+```
+
+### Cloud/Kubernetes integration not working
+
+Verify credentials and permissions:
+```bash
+# AWS
+aws sts get-caller-identity
+
+# Kubernetes
+kubectl auth can-i list pods
+
+# Azure
+az account show
+
+# GCP
+gcloud config list
+```
+
+See `docs/TROUBLESHOOTING.md` for more detailed guidance.
 
 ## Development Phases - Completion Status
 
