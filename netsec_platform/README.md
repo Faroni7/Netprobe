@@ -84,8 +84,8 @@ See the complete directory structure in the repository. Key components:
 ### Development Setup
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/netsec-platform.git
-cd netsec_platform
+git clone https://github.com/Faroni7/Netprobe.git
+cd Netprobe/netsec_platform
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
@@ -116,8 +116,8 @@ sudo apt install -y python3.10 python3.10-venv python3-pip \
 #### Step 2: Clone and Setup Backend
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/netsec-platform.git
-cd netsec-platform
+git clone https://github.com/Faroni7/Netprobe.git
+cd Netprobe/netsec_platform
 python3.10 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
@@ -291,8 +291,8 @@ brew install python@3.10 libpcap node git openssl
 #### Step 2: Clone and Setup
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/netsec-platform.git
-cd netsec-platform
+git clone https://github.com/Faroni7/Netprobe.git
+cd Netprobe/netsec_platform
 python3.10 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
@@ -360,8 +360,8 @@ wsl --install -d Ubuntu-22.04
 # Install Node.js from nodejs.org
 # Install Npcap from https://nmap.org/npcap/
 
-git clone https://github.com/YOUR_USERNAME/netsec-platform.git
-cd netsec-platform
+git clone https://github.com/Faroni7/Netprobe.git
+cd Netprobe/netsec_platform
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -e ".[prod]"
@@ -391,8 +391,8 @@ ssh ubuntu@your-instance-ip
 sudo apt update && sudo apt install -y python3.10 python3-pip libpcap-dev nodejs npm
 
 # Clone and setup
-git clone https://github.com/YOUR_USERNAME/netsec-platform.git
-cd netsec-platform
+git clone https://github.com/Faroni7/Netprobe.git
+cd Netprobe/netsec_platform
 python3.10 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[prod]"
