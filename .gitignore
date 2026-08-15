@@ -1,1 +1,1 @@
-(netsec_platform/src/netsec_platform/security/__init__.py, netsec_platform/src/netsec_platform/security/scope_enforcement.py)
+(netsec_platform/src/netsec_platform/audit/__init__.py, netsec_platform/src/netsec_platform/auth/__init__.py, netsec_platform/src/netsec_platform/auth/mfa_totp.py, netsec_platform/src/netsec_platform/auth/session_manager.py, netsec_platform/src/netsec_platform/backup/__init__.py, netsec_platform/src/netsec_platform/monitoring/__init__.py, netsec_platform/src/netsec_platform/workers/__init__.py)
