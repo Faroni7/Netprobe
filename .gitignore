@@ -1,44 +1,85 @@
 ```
 # Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+build/
+target/
+
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
-# Testing
-.pytest_cache/
-.coverage
-coverage/
-htmlcov/
-
-# Environment
-.venv/
+.Python
+env/
 venv/
+.venv/
+.ENV
 .env
 .env.local
-*.env.*
+.env.*
+requirements.txt.bak
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+.MF
+tags
+TAGS
+.idlerc/
+.python-version
+.ipynb_checkpoints
+.spyderproject
+.spyproject
+.ropeproject
+/site-packages/
+.pytest_cache/
+.mypy_cache/
+.hypothesis/
 
-# Editors
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# Logs
-*.log
-
-# Build artifacts
-build/
-dist/
-target/
+*~
 
 # OS
 .DS_Store
 Thumbs.db
-
-# Python specific
-*.egg-info/
-*.so
-*.dylib
-*.dll
+ehthumbs.db
+Icon?
+.directory
+.Trashes
+*.nib
+*~
+.#*
+.DS_Store?
+._*
+.Spotlight-V100
+.Trash-*
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDouble
+.LSOverride
+.DocumentRevisions-V100
+.fseventsd
+.Snapshot
 ```
