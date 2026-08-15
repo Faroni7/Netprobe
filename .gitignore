@@ -1,4 +1,3 @@
-```markdown
-# Configuration reference documentation
-!netsec_platform/docs/CONFIGURATION_REFERENCE.md
+```yaml
+# Configuration and documentation files only - no build artifacts, dependencies, or temp files to ignore
 ```

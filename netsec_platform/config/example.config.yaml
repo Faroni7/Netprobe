@@ -1,0 +1,192 @@
+# NetSec Platform - Complete Example Configuration
+# 
+# This file contains ALL implemented configuration options.
+# Copy to config/config.yaml and customize for your environment.
+#
+# Documentation: docs/CONFIG.md (admin guide)
+# Technical Reference: docs/CONFIGURATION_REFERENCE.md
+
+# ============================================================================
+# APPLICATION SETTINGS
+# ============================================================================
+
+app_name: "NetSec Platform"
+debug: false
+log_level: "INFO"
+
+# ============================================================================
+# API SETTINGS
+# ============================================================================
+
+api_host: "127.0.0.1"  # Use 0.0.0.0 only with firewall
+api_port: 8000
+api_key: <SET_VIA_ENVIRONMENT>  # NETSEC_API_KEY - Never commit secrets
+
+# Session management
+session_timeout_minutes: 60
+require_mfa: false  # Enable in production
+
+# ============================================================================
+# STORAGE CONFIGURATION
+# ============================================================================
+
+storage:
+  # Base paths
+  base_path: "/var/netsec_platform/data"
+  pcap_path: "pcaps"
+  evidence_path: "evidence"
+  db_path: "db/netsec.db"
+  log_path: "logs"
+  
+  # Retention policies (days)
+  metadata_retention_days: 30
+  pcap_retention_days: 7
+  evidence_retention_days: 90
+  
+  # Storage limits
+  max_storage_gb: 100.0
+  max_pcap_size_mb: 1024.0
+  
+  # Encryption - CRITICAL FOR PRODUCTION
+  encrypt_evidence_at_rest: true
+  encryption_key_path: <SET_VIA_SECRET_MANAGER>  # Or null for system keyring
+
+# ============================================================================
+# CAPTURE CONFIGURATION
+# ============================================================================
+
+capture:
+  # Profile: metadata_only, standard, or full_evidence
+  profile: "standard"
+  
+  # Interface settings
+  interface: null  # null = auto-discover, or specify: eth0, wlan0, lo, any
+  snap_length: 65535  # Note: Currently hardcoded
+  
+  # Performance settings
+  ring_buffer_size_mb: 512
+  max_packets_per_second: 100000
+  
+  # Filters (BPF syntax)
+  bpf_filter: null  # Examples: "port 80 or port 53", "not net 10.0.0.0/8"
+  
+  # Limits
+  max_capture_size_mb: 4096.0
+  max_capture_duration_hours: 24
+
+# ============================================================================
+# SCOPE CONFIGURATION (Authorization for Testing)
+# ============================================================================
+
+scope:
+  # Network scope
+  allowed_ips: []  # Specific IPs (empty = no restriction)
+  allowed_cidrs: []  # Recommended: ["10.10.0.0/16"]
+  excluded_ips: []  # Critical systems to exclude
+  excluded_cidrs: []  # Off-limits networks
+  
+  # Domain scope
+  allowed_domains: []  # e.g., ["portal.example.com"]
+  excluded_domains: []  # e.g., ["auth.example.com"]
+  
+  # Port scope
+  allowed_ports: []  # e.g., [80, 443, 8080]
+  excluded_ports: []  # e.g., [22, 3389]
+  
+  # Authorization reference
+  auth_reference: null  # e.g., "AUTH-2026-0042"
+  authz_type: "written_authorization"  # Always use written_authorization
+  
+  # Testing period
+  testing_start: null  # ISO 8601: "2026-08-10T09:00:00Z"
+  testing_end: null    # ISO 8601: "2026-08-20T17:00:00Z"
+
+# ============================================================================
+# EMERGENCY SECURITY STOP (ESS)
+# ============================================================================
+
+ess:
+  enabled: true  # NEVER disable in production
+  require_confirmation: true  # Prevent accidental activation
+  lock_sensitive_evidence: true
+  stop_active_tests: true
+  stop_exports: true
+  preserve_evidence: true  # Evidence preserved on ESS
+  require_auth_for_recovery: true
+  auto_recovery_timeout_minutes: 0  # 0 = manual recovery only
+
+# ============================================================================
+# CONTROLLED TESTING CONFIGURATION
+# ============================================================================
+
+controlled_test:
+  enabled: false  # Enable only for authorized pentesting
+  
+  # Rate limits
+  max_requests_per_second: 10
+  max_total_requests: 1000
+  request_timeout_seconds: 30
+  test_duration_limit_minutes: 60
+  
+  # Safety controls - NEVER disable these
+  require_explicit_approval: true
+  validate_target_scope: true
+  fail_closed_on_error: true
+
+# ============================================================================
+# ADDITIONAL SETTINGS (if implemented in your version)
+# ============================================================================
+
+# Detection engine thresholds
+detection:
+  enabled: true
+  confidence_threshold: 0.7
+  worker_count: 4
+
+# Audit logging
+audit:
+  logging_enabled: true
+  log_path: <uses storage.log_path>
+  retention_days: 365
+
+# Database
+database:
+  pool_size: 10
+  timeout_seconds: 30
+
+# Performance tuning
+performance:
+  max_workers: 8
+  queue_size: 10000
+  backlog_limit: 5000
+
+# Reporting
+reporting:
+  default_format: "html"
+  include_evidence: true
+  redact_sensitive: true
+
+# Web frontend (if applicable)
+frontend:
+  session_timeout: 3600
+  max_upload_size_mb: 100
+
+# ============================================================================
+# ENVIRONMENT VARIABLE OVERRIDES
+# ============================================================================
+# Set these in your shell or systemd service:
+#
+# export NETSEC_DEBUG=false
+# export NETSEC_API_KEY="<your-secret-key>"
+# export NETSEC_STORAGE__ENCRYPT_EVIDENCE_AT_REST=true
+# export NETSEC_CAPTURE__PROFILE=standard
+# export NETSEC_CAPTURE__INTERFACE=eth0
+# export NETSEC_SCOPE__ALLOWED_CIDRS='["10.10.0.0/16"]'
+# export NETSEC_ESS__ENABLED=true
+# export NETSEC_CONTROLLED_TEST__ENABLED=false
+#
+# Note: Environment variables take precedence over this file
+
+# ============================================================================
+# END OF CONFIGURATION
+# ============================================================================
