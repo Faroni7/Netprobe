@@ -1,28 +1,3 @@
-```
-# Compressed archives
-*.tar.gz
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.bz2
-*.tar.xz
-*.tar.zst
-
-# Archive file
-netsec_platform_archive.tar.gz
-```
+(netsec_platform/docs/REPORT_EXPORT_GUIDE.md
+netsec_platform/README.md
+netsec_platform/src/netsec_platform/reporting/report_engine.py)

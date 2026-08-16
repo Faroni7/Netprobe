@@ -587,8 +587,39 @@ REST API with 40+ endpoints documented at `/docs` (Swagger UI). Key endpoints:
 - `/api/v1/findings`, `/api/v1/evidence/*` - Security findings and evidence
 - `/api/v1/ess/*` - Emergency Security Stop
 - `/api/v1/tests/controlled` - Controlled testing
+- `/api/v1/reports/export` - Report generation and export (NEW)
 
 Sensitive endpoints require explicit permissions. ESS endpoint has enhanced protection.
+
+## Report Export Feature (NEW)
+
+Generate and download security reports in multiple formats:
+
+**Supported Formats:**
+- **HTML** - Interactive web reports with charts
+- **PDF** - Printable documents (requires `weasyprint`)
+- **JSON** - Machine-readable format for automation
+- **CSV** - Spreadsheet-compatible for Excel analysis
+- **Markdown** - Plain text documentation
+- **DOCX** - Word documents (via HTML conversion)
+
+**Usage:**
+```python
+from netsec_platform.reporting import ReportGenerator
+
+reporter = ReportGenerator(db)
+
+# Single format export
+result = reporter.export_report(format='html', title="Security Assessment")
+
+# Multiple formats at once
+results = reporter.export_multiple_reports(
+    formats=['html', 'json', 'csv', 'md'],
+    case_id='CASE-2024-001'
+)
+```
+
+See [`docs/REPORT_EXPORT_GUIDE.md`](docs/REPORT_EXPORT_GUIDE.md) for complete documentation.
 
 ## Security Considerations
 
