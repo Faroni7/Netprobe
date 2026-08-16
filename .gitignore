@@ -1,3 +1,7 @@
-(netsec_platform/docs/REPORT_EXPORT_GUIDE.md
-netsec_platform/README.md
-netsec_platform/src/netsec_platform/reporting/report_engine.py)
+```
+# Compressed files
+*.tar.gz
+
+# Backup files
+*BACKUP*
+```
