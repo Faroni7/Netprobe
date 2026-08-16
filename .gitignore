@@ -1,1 +1,28 @@
-(netsec_platform/src/netsec_platform/audit/__init__.py, netsec_platform/src/netsec_platform/auth/__init__.py, netsec_platform/src/netsec_platform/auth/mfa_totp.py, netsec_platform/src/netsec_platform/auth/session_manager.py, netsec_platform/src/netsec_platform/backup/__init__.py, netsec_platform/src/netsec_platform/monitoring/__init__.py, netsec_platform/src/netsec_platform/workers/__init__.py)
+```
+# Compressed archives
+*.tar.gz
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
+*.tar.bz2
+*.tar.xz
+*.tar.zst
+
+# Archive file
+netsec_platform_archive.tar.gz
+```
