@@ -1,5 +1,37 @@
-*.pyc
-__pycache__/
-.env
-venv/
+```
+# Dependencies
 node_modules/
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.env
+.env.local
+.env.
+# Build artifacts
+dist/
+build/
+target/
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+# Logs
+*.log
+*.tmp
+# Coverage
+.coverage
+coverage/
+htmlcov/
+# Python specific
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+# UI build artifacts
+ui/dist/
+ui/build/
+```
