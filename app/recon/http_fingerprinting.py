@@ -28,6 +28,7 @@ class HTTPFingerprintingPhase(BaseReconPhase):
             methods_tested = ["GET", "HEAD", "OPTIONS"]
             results = {}
             redirects = []
+            html_content = ""
             
             async with aiohttp.ClientSession(headers=headers, timeout=timeout) as session:
                 for method in methods_tested:
@@ -48,14 +49,21 @@ class HTTPFingerprintingPhase(BaseReconPhase):
                                             "status": redirect.status
                                         })
                             
+                            body = await response.text()
+
                             results[method] = {
                                 "status_code": response.status,
                                 "headers": dict(response.headers),
                                 "content_type": response.content_type,
                                 "content_length": response.content_length,
                                 "server": response.headers.get('Server', 'Unknown'),
-                                "final_url": str(response.url)
+                                "final_url": str(response.url),
+                                "body": body
                             }
+
+                            # Store HTML content from GET request for downstream phases
+                            if method == "GET" and response.content_type and 'text/html' in response.content_type:
+                                html_content = body
                             
                             # Extract key findings
                             if method == "GET":
@@ -72,6 +80,7 @@ class HTTPFingerprintingPhase(BaseReconPhase):
                 "redirects": redirects,
                 "server_info": self._extract_server_info(results),
                 "detailed_results": results,
+                "html_content": html_content,
                 "status": "completed"
             }
             

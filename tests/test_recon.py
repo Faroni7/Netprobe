@@ -18,9 +18,9 @@ class MockPhase(BaseReconPhase):
 
 def test_base_phase_initialization():
     """Test base phase initialization."""
-    phase = MockPhase("http://test.local", 1, None)
+    phase = MockPhase("http://test.local", {})
     assert phase.target_url == "http://test.local"
-    assert phase.scan_id == 1
+    assert phase.context == {}
     assert phase.name == "mock_phase"
     assert phase.order == 1
 
@@ -28,7 +28,7 @@ def test_base_phase_initialization():
 @pytest.mark.asyncio
 async def test_base_phase_run():
     """Test base phase run method."""
-    phase = MockPhase("http://test.local", 1, None)
+    phase = MockPhase("http://test.local", {})
     result = await phase.run()
     
     assert result["phase_name"] == "mock_phase"
@@ -39,7 +39,7 @@ async def test_base_phase_run():
 
 def test_add_finding():
     """Test adding findings."""
-    phase = MockPhase("http://test.local", 1, None)
+    phase = MockPhase("http://test.local", {})
     phase.add_finding(
         finding_type="endpoint",
         title="Test Finding",

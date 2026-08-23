@@ -119,7 +119,11 @@ class APIDiscoveryPhase(BaseReconPhase):
                                 graphql_endpoints.append(full_url)
                 
                 for api_call in js_api_calls:
-                    full_url = api_call if api_call.startswith('http') else urljoin(base_url, api_call)
+                    # Handle both string and dict formats
+                    endpoint_str = api_call.get('endpoint', '') if isinstance(api_call, dict) else api_call
+                    if not endpoint_str:
+                        continue
+                    full_url = endpoint_str if endpoint_str.startswith('http') else urljoin(base_url, endpoint_str)
                     if full_url not in found_paths and ('/api/' in full_url or 'graphql' in full_url.lower()):
                         api_endpoints.append({
                             "url": full_url,
