@@ -8,9 +8,15 @@ import aiohttp
 from unittest.mock import AsyncMock, patch
 import sys
 import os
+import threading
+import time
+from http.server import HTTPServer
 
 # Add the workspace to path
 sys.path.insert(0, '/workspace')
+
+# Import controlled target server
+from tests.controlled_target import ControlledTargetHandler, run_server
 
 from app.recon.dns_discovery import DNSDiscoveryPhase
 from app.recon.http_fingerprinting import HTTPFingerprintingPhase
@@ -23,13 +29,44 @@ from app.recon.vuln_classification import VulnClassificationPhase
 from app.recon.graph_builder import GraphBuilderPhase
 
 
+# Global server reference for teardown
+_server_instance = None
+_server_thread = None
+
+
+@pytest.fixture(scope="module")
+def controlled_target_server():
+    """Start a controlled test target server for integration tests."""
+    global _server_instance, _server_thread
+    
+    # Create and start server in background thread
+    port = 8765
+    _server_instance = HTTPServer(('127.0.0.1', port), ControlledTargetHandler)
+    
+    def run():
+        _server_instance.serve_forever()
+    
+    _server_thread = threading.Thread(target=run, daemon=True)
+    _server_thread.start()
+    
+    # Give server time to start
+    time.sleep(0.5)
+    
+    yield f"http://127.0.0.1:{port}"
+    
+    # Teardown
+    if _server_instance:
+        _server_instance.shutdown()
+        _server_instance.server_close()
+
+
 class TestDNSDiscovery:
     """Test DNS Discovery phase."""
     
     @pytest.mark.asyncio
-    async def test_dns_localhost_resolution(self):
+    async def test_dns_localhost_resolution(self, controlled_target_server):
         """Test DNS resolution for localhost."""
-        phase = DNSDiscoveryPhase("http://127.0.0.1:8765", {})
+        phase = DNSDiscoveryPhase(controlled_target_server, {})
         result = await phase.execute()
         
         assert result["status"] == "completed"
@@ -39,9 +76,9 @@ class TestDNSDiscovery:
         assert len(result["addresses"]) >= 1
     
     @pytest.mark.asyncio
-    async def test_dns_ip_target_handling(self):
+    async def test_dns_ip_target_handling(self, controlled_target_server):
         """Test that IP targets are handled without DNS lookup."""
-        phase = DNSDiscoveryPhase("http://127.0.0.1:8765", {})
+        phase = DNSDiscoveryPhase(controlled_target_server, {})
         result = await phase.execute()
         
         assert result["status"] != "stub"
@@ -52,9 +89,9 @@ class TestHTTPFingerprinting:
     """Test HTTP Fingerprinting phase."""
     
     @pytest.mark.asyncio
-    async def test_http_fingerprinting_basic(self):
+    async def test_http_fingerprinting_basic(self, controlled_target_server):
         """Test basic HTTP fingerprinting."""
-        phase = HTTPFingerprintingPhase("http://127.0.0.1:8765", {})
+        phase = HTTPFingerprintingPhase(controlled_target_server, {})
         result = await phase.execute()
         
         assert result["status"] == "completed"
@@ -62,9 +99,9 @@ class TestHTTPFingerprinting:
         assert result.get("status_codes", {}).get("GET") == 200
     
     @pytest.mark.asyncio
-    async def test_server_header_detection(self):
+    async def test_server_header_detection(self, controlled_target_server):
         """Test server header detection."""
-        phase = HTTPFingerprintingPhase("http://127.0.0.1:8765", {})
+        phase = HTTPFingerprintingPhase(controlled_target_server, {})
         result = await phase.execute()
         
         server_info = result.get("server_info", {})
@@ -76,7 +113,7 @@ class TestTechDetection:
     """Test Technology Detection phase."""
     
     @pytest.mark.asyncio
-    async def test_tech_detection_with_context(self):
+    async def test_tech_detection_with_context(self, controlled_target_server):
         """Test technology detection using HTTP results."""
         # Simulate having HTTP results from previous phase
         context = {
@@ -96,7 +133,7 @@ class TestTechDetection:
             }
         }
         
-        phase = TechDetectionPhase("http://127.0.0.1:8765", context)
+        phase = TechDetectionPhase(controlled_target_server, context)
         result = await phase.execute()
         
         assert result["status"] == "completed"
@@ -108,16 +145,16 @@ class TestJSAnalysis:
     """Test JavaScript Analysis phase."""
     
     @pytest.mark.asyncio
-    async def test_js_file_discovery(self):
+    async def test_js_file_discovery(self, controlled_target_server):
         """Test JavaScript file discovery."""
         # First get HTML content
-        http_phase = HTTPFingerprintingPhase("http://127.0.0.1:8765", {})
+        http_phase = HTTPFingerprintingPhase(controlled_target_server, {})
         http_result = await http_phase.execute()
         
         # Get HTML from response
         context = {"http_fingerprinting": http_result}
         
-        js_phase = JSAnalysisPhase("http://127.0.0.1:8765", context)
+        js_phase = JSAnalysisPhase(controlled_target_server, context)
         result = await js_phase.execute()
         
         assert result["status"] == "completed"
@@ -130,9 +167,9 @@ class TestParamDiscovery:
     """Test Parameter Discovery phase."""
     
     @pytest.mark.asyncio
-    async def test_parameter_extraction(self):
+    async def test_parameter_extraction(self, controlled_target_server):
         """Test parameter extraction from HTML."""
-        phase = ParamDiscoveryPhase("http://127.0.0.1:8765", {})
+        phase = ParamDiscoveryPhase(controlled_target_server, {})
         result = await phase.execute()
         
         assert result["status"] == "completed"
@@ -150,9 +187,9 @@ class TestSecurityHeaders:
     """Test Security Headers Analysis phase."""
     
     @pytest.mark.asyncio
-    async def test_security_headers_analysis(self):
+    async def test_security_headers_analysis(self, controlled_target_server):
         """Test security headers analysis."""
-        phase = SecurityHeadersPhase("http://127.0.0.1:8765", {})
+        phase = SecurityHeadersPhase(controlled_target_server, {})
         result = await phase.execute()
         
         assert result["status"] == "completed"
@@ -170,9 +207,9 @@ class TestAPIDiscovery:
     """Test API Discovery phase."""
     
     @pytest.mark.asyncio
-    async def test_api_endpoint_discovery(self):
+    async def test_api_endpoint_discovery(self, controlled_target_server):
         """Test API endpoint discovery."""
-        phase = APIDiscoveryPhase("http://127.0.0.1:8765", {})
+        phase = APIDiscoveryPhase(controlled_target_server, {})
         result = await phase.execute()
         
         assert result["status"] == "completed"
@@ -189,7 +226,7 @@ class TestVulnClassification:
     """Test Vulnerability Classification phase."""
     
     @pytest.mark.asyncio
-    async def test_vulnerability_classification(self):
+    async def test_vulnerability_classification(self, controlled_target_server):
         """Test vulnerability classification."""
         # Simulate context with findings from previous phases
         context = {
@@ -207,13 +244,13 @@ class TestVulnClassification:
             },
             "api_discovery": {
                 "api_endpoints": [
-                    {"url": "http://127.0.0.1:8765/api/users", "source": "path_probe"},
-                    {"url": "http://127.0.0.1:8765/admin", "source": "path_probe"}
+                    {"url": f"{controlled_target_server}/api/users", "source": "path_probe"},
+                    {"url": f"{controlled_target_server}/admin", "source": "path_probe"}
                 ]
             }
         }
         
-        phase = VulnClassificationPhase("http://127.0.0.1:8765", context)
+        phase = VulnClassificationPhase(controlled_target_server, context)
         result = await phase.execute()
         
         assert result["status"] == "completed"
@@ -226,14 +263,14 @@ class TestGraphBuilder:
     """Test Graph Builder phase."""
     
     @pytest.mark.asyncio
-    async def test_graph_construction(self):
+    async def test_graph_construction(self, controlled_target_server):
         """Test graph construction from discovered paths."""
         context = {
             "api_discovery": {
                 "api_endpoints": [
-                    {"url": "http://127.0.0.1:8765/api/users"},
-                    {"url": "http://127.0.0.1:8765/api/orders"},
-                    {"url": "http://127.0.0.1:8765/admin"}
+                    {"url": f"{controlled_target_server}/api/users"},
+                    {"url": f"{controlled_target_server}/api/orders"},
+                    {"url": f"{controlled_target_server}/admin"}
                 ]
             },
             "js_analysis": {
@@ -244,7 +281,7 @@ class TestGraphBuilder:
             }
         }
         
-        phase = GraphBuilderPhase("http://127.0.0.1:8765", context)
+        phase = GraphBuilderPhase(controlled_target_server, context)
         result = await phase.execute()
         
         assert result["status"] == "completed"
@@ -263,9 +300,8 @@ class TestEndToEndScan:
     """Test end-to-end scan simulation."""
     
     @pytest.mark.asyncio
-    async def test_full_recon_pipeline(self):
+    async def test_full_recon_pipeline(self, controlled_target_server):
         """Test complete reconnaissance pipeline."""
-        target_url = "http://127.0.0.1:8765"
         context = {}
         
         # Run phases in order
@@ -285,7 +321,7 @@ class TestEndToEndScan:
         findings_count = 0
         
         for phase_name, phase_class in phases:
-            phase = phase_class(target_url, context)
+            phase = phase_class(controlled_target_server, context)
             result = await phase.execute()
             
             # Store result for next phases

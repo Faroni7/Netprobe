@@ -54,7 +54,7 @@ class ParamDiscoveryPhase(BaseReconPhase):
                             # Extract parameters from URLs in HTML
                             url_params = self._extract_url_parameters(html_content, base_url)
                             for param in url_params:
-                                key = f"{param['endpoint']}:{param['name']}"
+                                key = f"{param['location']}:{param['name']}"
                                 if key not in found_params:
                                     found_params.add(key)
                                     url_parameters.append(param)
@@ -70,7 +70,7 @@ class ParamDiscoveryPhase(BaseReconPhase):
                                             title=f"Suspicious Parameter Discovered",
                                             severity="medium",
                                             description=f"Parameter '{param['name']}' may be security-sensitive",
-                                            location=param['endpoint'],
+                                            location=param['location'],
                                             evidence=f"Parameter: {param['name']}={param.get('example_value', '')}",
                                             metadata={"parameter": param['name'], "type": "url_parameter"}
                                         )
