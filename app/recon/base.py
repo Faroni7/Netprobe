@@ -22,10 +22,9 @@ class BaseReconPhase(ABC):
     order: int = 0
     description: str = "Base reconnaissance phase"
     
-    def __init__(self, target_url: str, scan_id: int, session=None):
+    def __init__(self, target_url: str, context: Optional[Dict] = None):
         self.target_url = target_url
-        self.scan_id = scan_id
-        self.session = session  # Database session
+        self.context = context or {}
         self.results: Dict[str, Any] = {}
         self.findings: List[Dict[str, Any]] = []
         self.started_at: Optional[datetime] = None
