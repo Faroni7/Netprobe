@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse, PlainTextResponse, HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import json
 
 from app.db import get_db
@@ -46,7 +46,7 @@ async def build_graph_tree(scan_id: int, db: AsyncSession) -> Optional[Dict]:
         return None
     
     # Build tree structure
-    node_map = {n.node_id: {"id": n.node_id, "label": n.label, "type": n.node_type, "children": [], "metadata": n.metadata} for n in nodes}
+    node_map = {n.node_id: {"id": n.node_id, "label": n.label, "type": n.node_type, "children": [], "extra_data": n.extra_data} for n in nodes}
     root = None
     
     for node in nodes:

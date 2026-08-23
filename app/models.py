@@ -86,7 +86,7 @@ class Finding(Base):
     location = Column(String(512), nullable=True)  # URL or path
     evidence = Column(Text, nullable=True)
     remediation = Column(Text, nullable=True)
-    metadata = Column(JSON, nullable=True)  # additional structured data
+    extra_data = Column(JSON, nullable=True)  # additional structured data
     is_false_positive = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
@@ -108,7 +108,7 @@ class GraphNode(Base):
     label = Column(String(255), nullable=False)
     parent_id = Column(String(255), nullable=True)  # for tree structure
     depth = Column(Integer, default=0)
-    metadata = Column(JSON, nullable=True)  # additional node data
+    extra_data = Column(JSON, nullable=True)  # additional node data
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships

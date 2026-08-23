@@ -120,14 +120,14 @@ class FindingBase(BaseModel):
 class FindingCreate(FindingBase):
     """Schema for creating a Finding"""
     scan_id: int
-    metadata: Optional[Dict[str, Any]] = None
+    extra_data: Optional[Dict[str, Any]] = None
 
 
 class FindingResponse(FindingBase):
     """Schema for Finding response"""
     id: int
     scan_id: int
-    metadata: Optional[Dict[str, Any]] = None
+    extra_data: Optional[Dict[str, Any]] = None
     is_false_positive: bool = False
     created_at: datetime
     
@@ -149,14 +149,14 @@ class GraphNodeBase(BaseModel):
 class GraphNodeCreate(GraphNodeBase):
     """Schema for creating a GraphNode"""
     scan_id: int
-    metadata: Optional[Dict[str, Any]] = None
+    extra_data: Optional[Dict[str, Any]] = None
 
 
 class GraphNodeResponse(GraphNodeBase):
     """Schema for GraphNode response"""
     id: int
     scan_id: int
-    metadata: Optional[Dict[str, Any]] = None
+    extra_data: Optional[Dict[str, Any]] = None
     created_at: datetime
     
     class Config:
@@ -169,7 +169,7 @@ class GraphNodeTree(BaseModel):
     label: str
     type: str
     children: List['GraphNodeTree'] = []
-    metadata: Optional[Dict[str, Any]] = None
+    extra_data: Optional[Dict[str, Any]] = None
 
 
 # ============== Report Schemas ==============

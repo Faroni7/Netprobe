@@ -1,37 +1,45 @@
 ```
-# Dependencies
-node_modules/
-venv/
-.venv/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
+# Database
+blackbox.db
+
+# Environment
 .env
 .env.local
-.env.
-# Build artifacts
+.env.*
+
+# Dependencies
+.venv/
+venv/
+node_modules/
+
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
+*.so
+*.dll
+*.exe
 dist/
 build/
 target/
+.mypy_cache/
+.pytest_cache/
+coverage/
+htmlcov/
+.coverage
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.swo
+
 # Editors
 .vscode/
 .idea/
-*.swp
-*.swo
-# Logs
-*.log
-*.tmp
-# Coverage
-.coverage
-coverage/
-htmlcov/
-# Python specific
-*.egg-info/
-.pytest_cache/
-.mypy_cache/
-# UI build artifacts
-ui/dist/
-ui/build/
+
+# System
+.DS_Store
+Thumbs.db
 ```
