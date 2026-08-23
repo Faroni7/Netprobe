@@ -5,7 +5,7 @@ import { Play, Square, FileText } from 'lucide-react'
 export default function ScansList() {
   const queryClient = useQueryClient()
   
-  const { data: scans, isLoading, refetch } = useQuery({
+  const { data: scans, isLoading } = useQuery({
     queryKey: ['scans'],
     queryFn: async () => {
       const res = await fetch('/api/scans')

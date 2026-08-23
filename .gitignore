@@ -1,45 +1,28 @@
 ```
-# Database
-blackbox.db
-
-# Environment
-.env
-.env.local
-.env.*
-
 # Dependencies
-.venv/
-venv/
 node_modules/
-
-# Compiled and build artifacts
-*.pyc
-__pycache__/
-*.o
-*.obj
-*.so
-*.dll
-*.exe
-dist/
-build/
-target/
-.mypy_cache/
-.pytest_cache/
-coverage/
-htmlcov/
-.coverage
+package-lock.json
 
 # Logs and temp files
 *.log
 *.tmp
-*.swp
-*.swo
+
+# Environment
+.env
+.env.local
+*.env.*
 
 # Editors
 .vscode/
 .idea/
 
-# System
-.DS_Store
-Thumbs.db
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+.env
 ```

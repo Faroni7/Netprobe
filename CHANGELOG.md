@@ -5,6 +5,19 @@ All notable changes to BlackBox Recon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.1.1] - 2026-08-23
+
+### Fixed
+- **Scan Events API**: Added missing `/api/scans/{scan_id}/events` endpoint for retrieving scan events (P1)
+- **Frontend dependency**: Replaced deprecated `react-flow-renderer` with `@xyflow/react` v12 (P1)
+- **TypeScript build error**: Removed unused `refetch` variable in ScansList component (P3)
+
+### Verified
+- Full end-to-end scan lifecycle: target creation → scan execution → 9-phase pipeline → report generation
+- All export formats working: JSON, Markdown, HTML
+- Frontend production build succeeds
+- All existing tests pass (10/10)
+
 ## [v0.1.0] - 2024-01-01
 
 ### Added

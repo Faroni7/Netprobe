@@ -158,3 +158,39 @@ async def stop_scan(scan_id: int, db: AsyncSession = Depends(get_db)):
     await db.refresh(scan)
     
     return scan
+
+
+@router.get("/{scan_id}/events", response_model=List[dict])
+async def get_scan_events(scan_id: int, db: AsyncSession = Depends(get_db)):
+    """Get all events for a scan."""
+    from app.models import ScanEvent
+    from sqlalchemy import select
+    
+    # Verify scan exists
+    scan_result = await db.execute(select(Scan).where(Scan.id == scan_id))
+    scan = scan_result.scalar_one_or_none()
+    
+    if not scan:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Scan not found"
+        )
+    
+    events_result = await db.execute(
+        select(ScanEvent).where(ScanEvent.scan_id == scan_id).order_by(ScanEvent.phase_order, ScanEvent.created_at)
+    )
+    events = events_result.scalars().all()
+    
+    return [
+        {
+            "id": e.id,
+            "scan_id": e.scan_id,
+            "phase_name": e.phase_name,
+            "phase_order": e.phase_order,
+            "status": e.status,
+            "result_data": e.result_data,
+            "error_message": e.error_message,
+            "created_at": e.created_at
+        }
+        for e in events
+    ]
