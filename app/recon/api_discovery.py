@@ -66,7 +66,9 @@ class APIDiscoveryPhase(BaseReconPhase):
                                     "status_code": response.status,
                                     "content_type": content_type,
                                     "method": "GET",
-                                    "source": "path_probe"
+                                    "source": "path_probe",
+                                    "discovery_type": "observed",
+                                    "confidence": "high"
                                 }
                                 
                                 # Detect API type
@@ -111,7 +113,9 @@ class APIDiscoveryPhase(BaseReconPhase):
                                 "content_type": None,
                                 "method": "GET",
                                 "api_type": "referenced_in_js",
-                                "source": "javascript"
+                                "source": "javascript",
+                                "discovery_type": "inferred",
+                                "confidence": "medium"
                             })
                             found_paths.add(full_url)
                             
@@ -131,7 +135,9 @@ class APIDiscoveryPhase(BaseReconPhase):
                             "content_type": None,
                             "method": "GET",
                             "api_type": "referenced_in_js",
-                            "source": "javascript"
+                            "source": "javascript",
+                            "discovery_type": "inferred",
+                            "confidence": "medium"
                         })
                         found_paths.add(full_url)
                 
@@ -153,7 +159,9 @@ class APIDiscoveryPhase(BaseReconPhase):
                                         "content_type": None,
                                         "method": "GET",
                                         "api_type": "html_reference",
-                                        "source": "html"
+                                        "source": "html",
+                                        "discovery_type": "observed",
+                                        "confidence": "high"
                                     })
                                     found_paths.add(full_url)
                 except Exception:

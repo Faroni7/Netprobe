@@ -23,9 +23,15 @@ async def build_report_summary(scan_id: int, db: AsyncSession) -> ReportSummary:
     )
     findings = findings_result.scalars().all()
     
+    # Count API routes by discovery type
+    api_findings = [f for f in findings if f.finding_type == "api_endpoint"]
+    observed_api = len([f for f in api_findings if f.metadata and f.metadata.get('discovery_type') == 'observed'])
+    inferred_api = len([f for f in api_findings if f.metadata and f.metadata.get('discovery_type') == 'inferred'])
+    
     summary = ReportSummary(
         total_endpoints=len([f for f in findings if f.finding_type == "endpoint"]),
-        api_routes=len([f for f in findings if f.finding_type == "api"]),
+        api_routes=observed_api,  # Only count observed APIs as confirmed
+        api_candidates=inferred_api,  # Inferred API candidates
         authentication_mechanisms=len([f for f in findings if "auth" in f.finding_type.lower()]),
         debug_interfaces=len([f for f in findings if "debug" in f.title.lower()]),
         suspicious_parameters=len([f for f in findings if f.severity in ["medium", "high"]]),

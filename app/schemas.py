@@ -178,6 +178,7 @@ class ReportSummary(BaseModel):
     """Summary statistics for a report"""
     total_endpoints: int = 0
     api_routes: int = 0
+    api_candidates: int = 0
     authentication_mechanisms: int = 0
     debug_interfaces: int = 0
     suspicious_parameters: int = 0
